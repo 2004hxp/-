@@ -1,0 +1,367 @@
+// ==UserScript==
+// @name         教务系统下载所有成绩
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  try to take over the world!
+// @author       You
+// @match       http://10.252.6.31/jwglxt/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default
+// @match      http://10.252.6.31/jwglxt/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=zstu.edu.cn
+// @grant        none
+// @require      https://code.jquery.com/jquery-3.6.0.min.js
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // 创建按钮元素
+    if (document.getElementById('tm-cjdl-widget')) {
+        return;
+    }
+
+    $('head').append($("<style id='tm-cjdl-style'>\
+    #tm-cjdl-widget{position:fixed;right:8px;top:40%;bottom:auto;z-index:2147483647;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;}\
+    #tm-cjdl-fab{width:56px;height:160px;border:none;cursor:grab;touch-action:none;display:flex;align-items:center;justify-content:center;padding:10px 0;\
+      background:linear-gradient(135deg,rgba(51,122,183,.98),rgba(33,97,156,.98));\
+      box-shadow:0 18px 48px rgba(51,122,183,.30),0 12px 24px rgba(51,122,183,.18);color:#fff;font-size:14px;line-height:1;user-select:none;}\
+    #tm-cjdl-widget.tm-cjdl-side-right #tm-cjdl-fab{border-radius:16px 0 0 16px;}\
+    #tm-cjdl-widget.tm-cjdl-side-left #tm-cjdl-fab{border-radius:0 16px 16px 0;}\
+    #tm-cjdl-fab .tm-cjdl-fab-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}\
+    #tm-cjdl-fab .tm-cjdl-fab-ico{font-size:20px;line-height:1;}\
+    #tm-cjdl-fab .tm-cjdl-fab-text{font-weight:800;letter-spacing:1px;writing-mode:vertical-rl;text-orientation:upright;}\
+    #tm-cjdl-widget.tm-cjdl-side-right #tm-cjdl-fab:hover{transform:translateX(-1px);box-shadow:0 22px 56px rgba(51,122,183,.34),0 14px 28px rgba(51,122,183,.22);}\
+    #tm-cjdl-widget.tm-cjdl-side-left #tm-cjdl-fab:hover{transform:translateX(1px);box-shadow:0 22px 56px rgba(51,122,183,.34),0 14px 28px rgba(51,122,183,.22);}\
+    #tm-cjdl-fab:active{transform:translateX(0);}\
+    #tm-cjdl-widget.tm-cjdl-dragging #tm-cjdl-fab{cursor:grabbing;}\
+    #tm-cjdl-panel{position:absolute;bottom:0;width:320px;max-width:calc(100vw - 36px);max-height:calc(100vh - 40px);\
+      background:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.55);border-radius:16px;\
+      box-shadow:0 24px 60px rgba(26,22,54,.22);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);\
+      overflow:auto;}\
+    #tm-cjdl-widget.tm-cjdl-side-right #tm-cjdl-panel{right:66px;transform-origin:bottom right;}\
+    #tm-cjdl-widget.tm-cjdl-side-left #tm-cjdl-panel{left:66px;transform-origin:bottom left;}\
+    #tm-cjdl-panel.tm-cjdl-hidden{display:none;}\
+    #tm-cjdl-panel .tm-cjdl-header{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px 14px;}\
+    #tm-cjdl-panel .tm-cjdl-title{font-size:14px;font-weight:700;color:#1f2340;letter-spacing:.2px;}\
+    #tm-cjdl-panel .tm-cjdl-icon-btn{width:30px;height:30px;border-radius:10px;border:1px solid rgba(31,35,64,.10);\
+      background:rgba(255,255,255,.55);color:#1f2340;cursor:pointer;font-size:18px;line-height:28px;padding:0;}\
+    #tm-cjdl-panel .tm-cjdl-body{padding:0 14px 14px 14px;}\
+    #tm-cjdl-export{width:100%;border:none;border-radius:12px;padding:11px 12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;\
+      background:linear-gradient(135deg,rgb(51,122,183),rgb(33,97,156));color:#fff;font-weight:700;letter-spacing:.3px;}\
+    #tm-cjdl-export:hover{filter:brightness(1.02);}\
+    #tm-cjdl-export:disabled{cursor:not-allowed;opacity:.72;filter:saturate(.9);}\
+    #tm-cjdl-status{margin-top:10px;padding:10px 10px;border-radius:12px;border:1px solid rgba(31,35,64,.10);\
+      background:rgba(255,255,255,.55);color:#2a2f52;font-size:12px;line-height:1.35;}\
+    #tm-cjdl-status.tm-cjdl-success{border-color:rgba(31,153,88,.18);color:#157a44;background:rgba(225,255,241,.55);}\
+    #tm-cjdl-status.tm-cjdl-error{border-color:rgba(210,56,90,.18);color:#b21f3b;background:rgba(255,234,240,.62);}\
+    #tm-cjdl-spinner{width:14px;height:14px;border-radius:999px;border:2px solid rgba(255,255,255,.55);border-top-color:#fff;\
+      animation:tm-cjdl-spin .9s linear infinite;display:none;}\
+    #tm-cjdl-export.tm-cjdl-loading #tm-cjdl-spinner{display:inline-block;}\
+    @keyframes tm-cjdl-spin{to{transform:rotate(360deg);}}\
+    </style>"));
+
+    var widget = $(
+        "<div id='tm-cjdl-widget' class='tm-cjdl-side-right'>" +
+            "<button type='button' id='tm-cjdl-fab' aria-label='成绩导出'>" +
+                "<span class='tm-cjdl-fab-inner'>" +
+                    "<span class='tm-cjdl-fab-ico'>⇩</span>" +
+                    "<span class='tm-cjdl-fab-text'>成绩导出</span>" +
+                "</span>" +
+            "</button>" +
+            "<div id='tm-cjdl-panel' class='tm-cjdl-hidden'>" +
+                "<div class='tm-cjdl-header'>" +
+                    "<div class='tm-cjdl-title'>成绩导出</div>" +
+                    "<button type='button' class='tm-cjdl-icon-btn' id='tm-cjdl-close' aria-label='收起'>×</button>" +
+                "</div>" +
+                "<div class='tm-cjdl-body'>" +
+                    "<button type='button' id='tm-cjdl-export'>" +
+                        "<span id='tm-cjdl-btn-text'>导出所有成绩</span>" +
+                        "<span id='tm-cjdl-spinner' aria-hidden='true'></span>" +
+                    "</button>" +
+                    "<div id='tm-cjdl-status'>就绪：点击上方按钮导出当前学年学期成绩。</div>" +
+                "</div>" +
+            "</div>" +
+        "</div>"
+    );
+
+    $('body').append(widget);
+
+    var isBusy = false;
+    var $widget = $('#tm-cjdl-widget');
+    var $fab = $('#tm-cjdl-fab');
+    var $panel = $('#tm-cjdl-panel');
+    var $exportBtn = $('#tm-cjdl-export');
+    var $status = $('#tm-cjdl-status');
+    var $btnText = $('#tm-cjdl-btn-text');
+
+    var tmCjdlStorageKey = 'tm-cjdl-widget-pos';
+    var tmCjdlEdgeMargin = 8;
+    var suppressFabClick = false;
+
+    function setWidgetSide(side) {
+        $widget.removeClass('tm-cjdl-side-left tm-cjdl-side-right');
+        if (side === 'left') {
+            $widget.addClass('tm-cjdl-side-left');
+        } else {
+            $widget.addClass('tm-cjdl-side-right');
+        }
+    }
+
+    function applySavedPosition() {
+        var raw;
+        try {
+            raw = localStorage.getItem(tmCjdlStorageKey);
+        } catch (e) {
+            return;
+        }
+        if (!raw) {
+            return;
+        }
+        var data;
+        try {
+            data = JSON.parse(raw);
+        } catch (e) {
+            return;
+        }
+        if (!data || (data.side !== 'left' && data.side !== 'right')) {
+            return;
+        }
+        var top = Number(data.top);
+        if (!isFinite(top)) {
+            return;
+        }
+
+        var widgetRect = $widget[0].getBoundingClientRect();
+        var maxTop = Math.max(tmCjdlEdgeMargin, window.innerHeight - widgetRect.height - tmCjdlEdgeMargin);
+        if (top < tmCjdlEdgeMargin) {
+            top = tmCjdlEdgeMargin;
+        }
+        if (top > maxTop) {
+            top = maxTop;
+        }
+
+        setWidgetSide(data.side);
+        if (data.side === 'left') {
+            $widget.css({ left: tmCjdlEdgeMargin + 'px', right: 'auto', top: top + 'px', bottom: 'auto' });
+        } else {
+            $widget.css({ right: tmCjdlEdgeMargin + 'px', left: 'auto', top: top + 'px', bottom: 'auto' });
+        }
+    }
+
+    applySavedPosition();
+
+    function setStatus(text, type) {
+        $status.removeClass('tm-cjdl-success tm-cjdl-error');
+        if (type === 'success') {
+            $status.addClass('tm-cjdl-success');
+        } else if (type === 'error') {
+            $status.addClass('tm-cjdl-error');
+        }
+        $status.text(text);
+    }
+
+    function setBusy(busy) {
+        isBusy = busy;
+        if (busy) {
+            $exportBtn.prop('disabled', true).addClass('tm-cjdl-loading');
+            $btnText.text('导出中…');
+        } else {
+            $exportBtn.prop('disabled', false).removeClass('tm-cjdl-loading');
+            $btnText.text('导出所有成绩');
+        }
+    }
+
+    function downFile(blob) {
+        var elementA = document.createElement('a');
+        elementA.download = +new Date() + ".xlsx";
+        elementA.style.display = 'none';
+        elementA.href = URL.createObjectURL(blob);
+        document.body.appendChild(elementA);
+        elementA.click();
+        document.body.removeChild(elementA);
+        setTimeout(function() {
+            try {
+                URL.revokeObjectURL(elementA.href);
+            } catch (e) {
+            }
+        }, 3000);
+    }
+
+    $fab.on('click', function() {
+        if (suppressFabClick) {
+            suppressFabClick = false;
+            return;
+        }
+        $panel.toggleClass('tm-cjdl-hidden');
+    });
+    $('#tm-cjdl-close').on('click', function() {
+        $panel.addClass('tm-cjdl-hidden');
+    });
+
+    var dragState = {
+        tracking: false,
+        dragging: false,
+        pointerId: null,
+        startX: 0,
+        startY: 0,
+        startLeft: 0,
+        startTop: 0
+    };
+
+    function clamp(val, min, max) {
+        return Math.min(Math.max(val, min), max);
+    }
+
+    function startDraggingIfNeeded(e) {
+        if (dragState.dragging) {
+            return;
+        }
+        var dx = e.clientX - dragState.startX;
+        var dy = e.clientY - dragState.startY;
+        if (Math.abs(dx) + Math.abs(dy) < 6) {
+            return;
+        }
+
+        dragState.dragging = true;
+        $panel.addClass('tm-cjdl-hidden');
+
+        var rect = $widget[0].getBoundingClientRect();
+        dragState.startLeft = rect.left;
+        dragState.startTop = rect.top;
+
+        $widget.css({ left: rect.left + 'px', top: rect.top + 'px', right: 'auto', bottom: 'auto' });
+        $widget.addClass('tm-cjdl-dragging');
+        suppressFabClick = true;
+    }
+
+    function onPointerMove(e) {
+        if (!dragState.tracking || e.pointerId !== dragState.pointerId) {
+            return;
+        }
+
+        startDraggingIfNeeded(e);
+        if (!dragState.dragging) {
+            return;
+        }
+
+        var dx = e.clientX - dragState.startX;
+        var dy = e.clientY - dragState.startY;
+        var rect = $widget[0].getBoundingClientRect();
+        var newLeft = dragState.startLeft + dx;
+        var newTop = dragState.startTop + dy;
+
+        var maxLeft = Math.max(0, window.innerWidth - rect.width);
+        var maxTop = Math.max(0, window.innerHeight - rect.height);
+        newLeft = clamp(newLeft, 0, maxLeft);
+        newTop = clamp(newTop, 0, maxTop);
+
+        $widget.css({ left: newLeft + 'px', top: newTop + 'px' });
+    }
+
+    function endDrag(e) {
+        if (!dragState.tracking || e.pointerId !== dragState.pointerId) {
+            return;
+        }
+
+        dragState.tracking = false;
+
+        if (!dragState.dragging) {
+            dragState.pointerId = null;
+            return;
+        }
+
+        dragState.dragging = false;
+        dragState.pointerId = null;
+        $widget.removeClass('tm-cjdl-dragging');
+
+        var rect = $widget[0].getBoundingClientRect();
+        var side = (rect.left + rect.width / 2) < (window.innerWidth / 2) ? 'left' : 'right';
+        var top = clamp(rect.top, tmCjdlEdgeMargin, Math.max(tmCjdlEdgeMargin, window.innerHeight - rect.height - tmCjdlEdgeMargin));
+
+        setWidgetSide(side);
+        if (side === 'left') {
+            $widget.css({ left: tmCjdlEdgeMargin + 'px', right: 'auto', top: top + 'px', bottom: 'auto' });
+        } else {
+            $widget.css({ right: tmCjdlEdgeMargin + 'px', left: 'auto', top: top + 'px', bottom: 'auto' });
+        }
+
+        try {
+            localStorage.setItem(tmCjdlStorageKey, JSON.stringify({ side: side, top: top }));
+        } catch (err) {
+        }
+    }
+
+    $fab.on('pointerdown', function(e) {
+        if (e.button != null && e.button !== 0) {
+            return;
+        }
+        dragState.tracking = true;
+        dragState.dragging = false;
+        dragState.pointerId = e.pointerId;
+        dragState.startX = e.clientX;
+        dragState.startY = e.clientY;
+        try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+        } catch (err) {
+        }
+    });
+    $fab.on('pointermove', onPointerMove);
+    $fab.on('pointerup pointercancel', function(e) {
+        try {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+        } catch (err) {
+        }
+        endDrag(e);
+    });
+
+    $(window).on('resize', function() {
+        applySavedPosition();
+    });
+
+    // 按钮点击事件
+    $exportBtn.on('click', function() {
+        if (isBusy) {
+            return;
+        }
+
+        var xnmEl = document.querySelector('#xnm');
+        var xqmEl = document.querySelector('#xqm');
+        if (!xnmEl || !xqmEl) {
+            setStatus('导出失败：未找到学年/学期选择框，请先进入成绩查询页面再试。', 'error');
+            return;
+        }
+
+        var xnm = xnmEl.value;
+        var xqm = xqmEl.value;
+        if (!xnm || !xqm) {
+            setStatus('导出失败：请先选择学年与学期。', 'error');
+            return;
+        }
+
+        setBusy(true);
+        setStatus('正在请求导出文件，请稍候…', '');
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", '/jwglxt/cjcx/cjcx_dcXsKccjList.html', true);
+        xhr.responseType = 'blob';
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                downFile(xhr.response);
+                setStatus('导出成功：已开始下载。', 'success');
+            } else {
+                setStatus('导出失败：服务器返回状态 ' + xhr.status + '。', 'error');
+            }
+            setBusy(false);
+        };
+
+        xhr.onerror = function() {
+            setStatus('导出失败：网络错误或登录状态失效。', 'error');
+            setBusy(false);
+        };
+
+        xhr.send("gnmkdmKey=N305005&xnm=" + xnm + "&xqm=" + xqm + "&dcclbh=JW_N305005_GLY&exportModel.selectCol=kcmc%40%E8%AF%BE%E7%A8%8B%E5%90%8D%E7%A7%B0&exportModel.selectCol=xnmmc%40%E5%AD%A6%E5%B9%B4&exportModel.selectCol=xqmmc%40%E5%AD%A6%E6%9C%9F&exportModel.selectCol=kkbmmc%40%E5%BC%80%E8%AF%BE%E5%AD%A6%E9%99%A2&exportModel.selectCol=kch%40%E8%AF%BE%E7%A8%8B%E4%BB%A3%E7%A0%81&exportModel.selectCol=jxbmc%40%E6%95%99%E5%AD%A6%E7%8F%AD&exportModel.selectCol=xf%40%E5%AD%A6%E5%88%86&exportModel.selectCol=xmcj%40%E6%88%90%E7%BB%A9&exportModel.selectCol=xmblmc%40%E6%88%90%E7%BB%A9%E5%88%86%E9%A1%B9&exportModel.exportWjgs=xls&fileName=%E6%96%87%E4%BB%B91656485751290");
+    });
+
+    // 将按钮添加到页面中的某个位置，例如页面底部
+})();
