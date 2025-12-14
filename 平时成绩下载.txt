@@ -4,8 +4,8 @@
 // @version      0.1
 // @description  try to take over the world!
 // @author       You
-// @match       http://10.252.6.31/jwglxt/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default
-// @match      http://10.252.6.31/jwglxt/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default
+// @match       http://10.252.6.31/jwglxt/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default(修改为你成绩页面的网址)
+// @match      http://10.252.6.31/jwglxt/cjcx/cjcx_cxDgXscj.html?gnmkdm=N305005&layout=default(修改为你成绩页面的网址)
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=zstu.edu.cn
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
@@ -365,3 +365,4 @@
 
     // 将按钮添加到页面中的某个位置，例如页面底部
 })();
+
